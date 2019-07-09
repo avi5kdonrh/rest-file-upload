@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+       http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+">
+<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+    <restConfiguration component="jetty" port="9000" contextPath="/test"/>
+
+
+<rest consumes="multipart/form-data" path="/api1" produces="text/html">
+         <post outType="java.lang.String">
+           <route>
+                <to customId="true" id="_to1" uri="http4://127.0.0.1:9001/rest/api2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false&amp;httpClient.socketTimeout=240000"/>
+                    <setHeader headerName="Content-Type">
+                            <constant>text/plain</constant>
+                        </setHeader>
+                        <setBody>
+                            <simple>Uploaded</simple>
+                        </setBody>
+                </route>
+            </post>
+            
+            
+</rest>
+
+<route>
+    <from uri="direct:result" />
+        <log message="${body}"></log>
+</route>
+
+
+</camelContext>
+
+<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+   <restConfiguration component="jetty" port="9001" contextPath="/rest"/>
+        <rest consumes="multipart/form-data" produces="text/html" path="/api2">
+            <post>
+                <to uri="file:/tmp/"/> <!-- Handle the data here -->
+            </post>
+        </rest>
+ </camelContext>
+
+
+</blueprint>
