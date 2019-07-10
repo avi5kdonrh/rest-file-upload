@@ -5,15 +5,17 @@
        http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
        http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
 ">
-<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+<camelContext xmlns="http://camel.apache.org/schema/blueprint" id="context1">
 
-    <restConfiguration component="jetty" port="9000" contextPath="/test"/>
+    <restConfiguration component="jetty" port="9000" contextPath="/test" />
+
+        
 
 
 <rest consumes="multipart/form-data" path="/api1" produces="text/html">
          <post outType="java.lang.String">
            <route>
-                <to customId="true" id="_to1" uri="http4://127.0.0.1:9001/rest/api2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false&amp;httpClient.socketTimeout=240000"/>
+                <to customId="true" id="_to1" uri="http4://127.0.0.1:9001/rest/api2?bridgeEndpoint=true&amp;throwExceptionOnFailure=true&amp;httpClient.socketTimeout=240000"/>
                     <setHeader headerName="Content-Type">
                             <constant>text/plain</constant>
                         </setHeader>
@@ -35,7 +37,7 @@
 </camelContext>
 
 <camelContext xmlns="http://camel.apache.org/schema/blueprint">
-   <restConfiguration component="jetty" port="9001" contextPath="/rest"/>
+   <restConfiguration component="undertow" port="9001" contextPath="/rest"/>
         <rest consumes="multipart/form-data" produces="text/html" path="/api2">
             <post>
                 <to uri="file:/tmp/"/> <!-- Handle the data here -->
@@ -43,5 +45,18 @@
         </rest>
  </camelContext>
 
+
+
+ <bean id="jetty" class="org.apache.camel.component.jetty9.JettyHttpComponent9">
+    <property name="sslContextParameters" ref="sslContextParameters"/>
+</bean>
+
+<sslContextParameters   id="sslContextParameters"      xmlns="http://camel.apache.org/schema/blueprint" camelContextId="context1" > 
+        <keyManagers keyPassword="password">
+            <keyStore resource="file:/home/adongre/Music/Location1/Servers/eap714/jboss-eap-7.1/standalone/configuration/application.keystore"      password="password"/>
+        </keyManagers>
+        <serverParameters clientAuthentication="NONE"/>
+        
+    </sslContextParameters>
 
 </blueprint>
